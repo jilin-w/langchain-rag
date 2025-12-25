@@ -18,7 +18,7 @@ type TokenSplitService struct {
 func (*TokenSplitService) Split(reader io.Reader) ([]schema.Document, error) {
 	loader := documentloaders.NewText(reader)
 	split := textsplitter.NewRecursiveCharacter()
-	split.ChunkSize = 128
+	split.ChunkSize = 1024
 	split.ChunkOverlap = 30
 	docs, err := loader.LoadAndSplit(context.Background(), split)
 	return docs, err

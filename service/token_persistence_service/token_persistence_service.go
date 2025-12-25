@@ -16,8 +16,8 @@ var defaultPersistenceService PersistenceService
 func init() {
 	defaultPersistenceService = &PostgresPersistenceService{}
 }
-func Persistence(docs []schema.Document) (err error) {
-	return defaultPersistenceService.persistence(docs)
+func Persistence(name string, docs []schema.Document) (err error) {
+	return defaultPersistenceService.persistence(name, docs)
 }
 func Search(name, query string) (docs []schema.Document, err error) {
 	return defaultPersistenceService.search(name, query)
@@ -25,19 +25,20 @@ func Search(name, query string) (docs []schema.Document, err error) {
 
 // 持久化接口
 type PersistenceService interface {
-	persistence(docs []schema.Document) (err error)
+	persistence(name string, docs []schema.Document) (err error)
 	search(name, query string) (docs []schema.Document, err error)
 }
 
 type PostgresPersistenceService struct {
 }
 
-func (*PostgresPersistenceService) persistence(docs []schema.Document) (err error) {
+func (*PostgresPersistenceService) persistence(name string, docs []schema.Document) (err error) {
 	llm := openai.GetLLMInstance()
 	embedder, err := embeddings.NewEmbedder(llm)
 	store, err := pgvector.New(context.Background(),
 		pgvector.WithConnectionURL("postgresql://postgresql:123456@127.0.0.1:5432/postgres?sslmode=disable"),
 		pgvector.WithEmbedder(embedder),
+		pgvector.WithCollectionName(name),
 	)
 	if err != nil {
 		return
@@ -59,11 +60,12 @@ func (*PostgresPersistenceService) search(name, query string) (docs []schema.Doc
 	store, err := pgvector.New(context.Background(),
 		pgvector.WithConnectionURL("postgresql://postgresql:123456@127.0.0.1:5432/postgres?sslmode=disable"),
 		pgvector.WithEmbedder(embedder),
+		pgvector.WithCollectionName(name),
 	)
 	if err != nil {
 		return
 	}
-	docs, err = store.SimilaritySearch(context.Background(), query, 50,
+	docs, err = store.SimilaritySearch(context.Background(), query, 100,
 		vectorstores.WithEmbedder(embedder))
 	return
 }

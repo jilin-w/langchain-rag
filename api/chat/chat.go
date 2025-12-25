@@ -16,6 +16,7 @@ func (*ChatApiRouter) RegisterRouter(engine *gin.Engine) {
 	group.GET("/chat/stream", ChatStreamApi)
 	group.POST("/rag/upload", UploadRagFile)
 	group.GET("/rag/chat", ChatWithRag)
+	group.GET("/rag/analyze", AnalyzeGitCode)
 }
 func ChatApi(ctx *gin.Context) {
 	chat_service.DefaultChatService.Chat(ctx)
@@ -31,4 +32,8 @@ func UploadRagFile(ctx *gin.Context) {
 
 func ChatWithRag(ctx *gin.Context) {
 	ollama_service.DefaultOllamaService.ChatWithRag(ctx)
+}
+
+func AnalyzeGitCode(ctx *gin.Context) {
+	ollama_service.DefaultOllamaService.AnalyzeGitCode(ctx)
 }
